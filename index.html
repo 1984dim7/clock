@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Harmony Clock</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-panel">
+        <h1 class="main-title">The Harmony Clock</h1>
+        <canvas id="clockCanvas" width="400" height="400"></canvas>
+        <div id="digitalClock" class="display-panel">00:00:00</div>
+        <div id="frequencyDisplay" class="display-panel">
+            H: 0.00 Hz | M: 0.00 Hz | S: 0.00 Hz
+        </div>
+
+        <div class="waveform-controls">
+            <button class="wave-btn" data-wave="sine">Sine</button>
+            <button class="wave-btn" data-wave="square">Square</button>
+            <button class="wave-btn" data-wave="sawtooth">Saw</button>
+            <button class="wave-btn" data-wave="triangle">Triangle</button>
+        </div>
+
+        <div class="volume-controls">
+            <div class="slider-group">
+                <label for="hourVolume">H:</label>
+                <input type="range" id="hourVolume" min="0" max="1" value="0.3" step="0.01">
+            </div>
+            <div class="slider-group">
+                <label for="minuteVolume">M:</label>
+                <input type="range" id="minuteVolume" min="0" max="1" value="0.3" step="0.01">
+            </div>
+            <div class="slider-group">
+                <label for="secondVolume">S:</label>
+                <input type="range" id="secondVolume" min="0" max="1" value="0.3" step="0.01">
+            </div>
+        </div>
+
+        <canvas id="oscilloscopeCanvas" width="350" height="100"></canvas>
+
+        <div class="main-controls">
+            <button id="soundToggleButton">
+                <svg viewBox="0 0 24 24" class="mic-icon">
+                    <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" fill="currentColor"/>
+                    <path d="M17 11h-1c0 3.31-2.69 6-6 6s-6-2.69-6-6H7c0 4.08 3.06 7.44 7 7.93V21h2v-3.07c3.94-.49 7-3.85 7-7.93z" fill="currentColor"/>
+                </svg>
+                <svg viewBox="0 0 24 24" class="mic-off-icon">
+                    <path d="M19 11h-1c0 3.31-2.69 6-6 6s-6-2.69-6-6H5c0 4.08 3.06 7.44 7 7.93V21h2v-3.07c3.94-.49 7-3.85 7-7.93zM12 2C9.34 2 7.22 4.14 7.02 6.75L8.98 8.71C9.0 7.84 9.4 7.07 9.99 6.5C10.6 5.88 11.29 5.5 12 5.5s1.4.38 2.01 1c.59.43.99 1.2.99 2.07l1.96 1.96c.2-.23.38-.49.54-.78C16.89 8.24 17 7.12 17 6.01 17 3.86 14.73 2 12 2zm-1 9L5.41 5.41 4 6.82l.46.46C4.16 7.87 4 8.68 4 9.5c0 2.2.89 4.2 2.34 5.66L1.39 19 2.8 20.41 12 11.22 10.59 9.81 11 9.38l-1.95-1.95.7-.71 2.39 2.39.7.7zm2.46 2.46c-1.11 1.11-2.79 1.54-4.22 1.25l-.83.83c.96.64 2.15 1.05 3.42 1.05 1.67 0 3.09-.92 4.01-2.26l.46.46 1.41-1.41-1.41-1.41zm-1.88-3.04l-.84-.84c.7-.7 1.48-1.07 2.19-1.07.6 0 1.15.15 1.62.4l1.41-1.41c-.7-.47-1.57-.75-2.5-.75-1.55 0-2.83.69-3.75 1.62z" fill="currentColor"/>
+                </svg>
+            </button>
+            <div class="slider-container">
+                <label for="speedSlider">Speed:</label>
+                <input type="range" id="speedSlider" min="0" max="100" value="10" step="1">
+            </div>
+            <button id="syncButton">Sync</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
