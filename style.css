@@ -28,10 +28,9 @@ body {
     gap: 25px;
     max-width: 850px;
     width: 100%;
-    position: relative; /* NEW: 戻るボタンの基準位置 */
+    position: relative;
 }
 
-/* NEW: 戻るボタンのスタイル */
 .back-button {
     position: absolute;
     top: 15px;
@@ -43,6 +42,7 @@ body {
     border-radius: 15px;
     font-size: 0.9em;
     transition: background 0.2s;
+    z-index: 10;
 }
 .back-button:hover {
     background: rgba(255, 255, 255, 0.6);
@@ -58,13 +58,13 @@ body {
     text-align: center;
 }
 
-/* NEW: 時計とコード表示を重ねるためのコンテナ */
 .clock-container {
     grid-area: clock;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
+    min-width: 0; /* FIX: Prevent grid blowout */
 }
 canvas#clockCanvas {
     border-radius: 50%;
@@ -72,7 +72,6 @@ canvas#clockCanvas {
     max-width: 380px;
     aspect-ratio: 1 / 1;
 }
-/* NEW: コード表示のスタイル */
 .chord-display {
     position: absolute;
     bottom: 25%;
@@ -81,9 +80,8 @@ canvas#clockCanvas {
     color: #003366;
     opacity: 0.6;
     text-shadow: 0 1px 2px rgba(255,255,255,0.5);
-    pointer-events: none; /* クリックを透過させる */
+    pointer-events: none;
 }
-
 
 .controls-container {
     grid-area: controls;
@@ -91,7 +89,7 @@ canvas#clockCanvas {
     flex-direction: column;
     justify-content: space-between;
     gap: 12px;
-    min-width: 300px;
+    min-width: 0; /* FIX: Prevent grid blowout */
 }
 
 .display-panel {
@@ -118,7 +116,7 @@ canvas#clockCanvas {
     align-items: center;
     font-size: 1.1em;
     padding: 12px;
-    flex-wrap: wrap; /* UPDATED: 折り返し可能に */
+    flex-wrap: wrap;
 }
 .freq-panel > div {
     display: flex;
@@ -139,14 +137,14 @@ canvas#clockCanvas {
     display: flex;
     justify-content: space-between;
     gap: 10px;
-    flex-wrap: wrap; /* UPDATED: 折り返し可能に */
+    flex-wrap: wrap;
 }
 .waveform-controls {
     display: flex;
     justify-content: center;
     gap: 5px;
     flex-basis: 60%;
-    min-width: 200px; /* 最小幅を指定 */
+    min-width: 200px;
 }
 .wave-btn {
     padding: 5px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.2); color: #003366; cursor: pointer; transition: background 0.2s; font-size: 0.8em; flex-grow: 1;
@@ -182,7 +180,7 @@ input[type="number"] {
     justify-content: space-around;
     align-items: center;
     color: #003366;
-    flex-wrap: wrap; /* UPDATED: 折り返し可能に */
+    flex-wrap: wrap;
 }
 .slider-group {
     display: flex;
@@ -233,7 +231,6 @@ canvas#oscilloscopeCanvas {
 #speedSlider {
     width: 100%;
 }
-/* NEW: 速度表示のスタイル */
 .speed-display {
     font-family: 'Roboto Mono', monospace;
     font-size: 0.9em;
@@ -243,7 +240,6 @@ canvas#oscilloscopeCanvas {
     min-width: 45px;
     text-align: center;
 }
-
 
 @media (max-width: 700px) {
     body { padding: 10px; }
@@ -262,7 +258,6 @@ canvas#oscilloscopeCanvas {
     .freq-panel { flex-direction: column; gap: 5px; align-items: flex-start; }
 }
 
-/* NEW: 超小型デバイス向けの追加CSS */
 @media (max-width: 420px) {
     .main-title { font-size: 1.8em; }
     .interactive-controls, .volume-controls {
