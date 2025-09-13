@@ -15,10 +15,13 @@ const waveButtons = document.querySelectorAll('.wave-btn');
 const hourVolumeSlider = document.getElementById('hourVolume');
 const minuteVolumeSlider = document.getElementById('minuteVolume');
 const secondVolumeSlider = document.getElementById('secondVolume');
-// NEW: Octave Inputs
 const hourOctaveInput = document.getElementById('hourOctave');
 const minuteOctaveInput = document.getElementById('minuteOctave');
 const secondOctaveInput = document.getElementById('secondOctave');
+// NEW: Chord and Speed Display
+const chordDisplayDiv = document.getElementById('chordDisplay');
+const speedDisplaySpan = document.getElementById('speedDisplay');
+
 
 // --- State Management ---
 let isSoundOn = false;
@@ -37,6 +40,41 @@ let timeMultiplier = 1;
 // --- Sound Engine ---
 const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const baseFreq = 440; // A4
+
+// NEW: Chord detection data and functions
+const chordData = {
+    'C,E,G': 'C Major', 'C,D#,G': 'C Minor',
+    'C#,F,G#': 'C# Major', 'C#,E,G#': 'C# Minor',
+    'D,F#,A': 'D Major', 'D,F,A': 'D Minor',
+    'D#,G,A#': 'D# Major', 'D#,F#,A#': 'D# Minor',
+    'E,G#,B': 'E Major', 'E,G,B': 'E Minor',
+    'F,A,C': 'F Major', 'F,G#,C': 'F Minor',
+    'F#,A#,C#': 'F# Major', 'F#,A,C#': 'F# Minor',
+    'G,B,D': 'G Major', 'G,A#,D': 'G Minor',
+    'G#,C,D#': 'G# Major', 'G#,B,D#': 'G# Minor',
+    'A,C#,E': 'A Major', 'A,C,E': 'A Minor',
+    'A#,D,F': 'A# Major', 'A#,C#,F': 'A# Minor',
+    'B,D#,F#': 'B Major', 'B,D,F#': 'B Minor',
+};
+function getNoteFromFreq(freq) {
+    if (freq === 0) return null;
+    const midiNote = 69 + 12 * Math.log2(freq / 440);
+    return notes[Math.round(midiNote) % 12];
+}
+function getChord() {
+    const currentNotes = [
+        getNoteFromFreq(displayedFrequencies.hour),
+        getNoteFromFreq(displayedFrequencies.minute),
+        getNoteFromFreq(displayedFrequencies.second)
+    ].filter(Boolean); // nullを除外
+    
+    if (currentNotes.length < 3) return "...";
+    
+    const uniqueSortedNotes = [...new Set(currentNotes)].sort().join(',');
+    
+    return chordData[uniqueSortedNotes] || "...";
+}
+
 
 function getFrequency(note, octave) {
     const noteIndex = notes.indexOf(note);
@@ -82,12 +120,10 @@ function updateSound() {
     const targetMainGain = isSoundOn ? 1.0 : 0;
     mainGainNode.gain.linearRampToValueAtTime(targetMainGain, audioContext.currentTime + 0.2);
 
-    // NEW: Read octave values from inputs
     const hourOctave = parseInt(hourOctaveInput.value) || 3;
     const minuteOctave = parseInt(minuteOctaveInput.value) || 4;
     const secondOctave = parseInt(secondOctaveInput.value) || 3;
 
-    // Calculate base frequencies on the fly based on selected octaves
     const hourBaseFreq = getFrequency('C', hourOctave);
     const minuteBaseFreq = getFrequency('C', minuteOctave);
     const secondBaseFreq = getFrequency('C', secondOctave);
@@ -119,6 +155,11 @@ function updateSound() {
         oscillators.second.gainNode.gain.linearRampToValueAtTime(parseFloat(secondVolumeSlider.value), rampTime);
     }
     displayedFrequencies = { hour: hourFreq, minute: minuteFreq, second: secondFreq };
+    
+    // NEW: Update chord display
+    if (chordDisplayDiv) {
+        chordDisplayDiv.textContent = getChord();
+    }
 }
 
 // --- Drawing Clock Engine ---
@@ -260,17 +301,33 @@ soundToggleButton.addEventListener('click', async () => {
     }
 });
 
+// UPDATED: Speed slider now handles rewind and updates display
 speedSlider.addEventListener('input', (e) => {
     const sliderValue = parseFloat(e.target.value);
-    if (sliderValue <= 10) { timeMultiplier = sliderValue / 10; }
-    else { timeMultiplier = 1 + (sliderValue - 10) * (99 / 90); }
-    if (timeMultiplier < 0.001) timeMultiplier = 0;
+    
+    if (sliderValue >= 0) {
+        // Forward speed
+        if (sliderValue <= 10) { timeMultiplier = sliderValue / 10; }
+        else { timeMultiplier = 1 + (sliderValue - 10) * (99 / 90); }
+    } else {
+        // Rewind speed
+        const absValue = Math.abs(sliderValue);
+        if (absValue <= 10) { timeMultiplier = sliderValue / 10; }
+        else { timeMultiplier = -(1 + (absValue - 10) * (99 / 90)); }
+    }
+    
+    if (Math.abs(timeMultiplier) < 0.001 && sliderValue !== 0) timeMultiplier = 0;
+
+    // Update display
+    speedDisplaySpan.textContent = `x${timeMultiplier.toFixed(1)}`;
 });
+
 
 syncButton.addEventListener('click', () => {
     virtualTime = new Date();
     timeMultiplier = 1;
     speedSlider.value = 10;
+    speedDisplaySpan.textContent = 'x1.0'; // NEW: Reset display
     lastTimestamp = 0;
 });
 
@@ -299,4 +356,5 @@ soundToggleButton.classList.add('off');
 soundToggleButton.textContent = 'Unmute';
 document.querySelector('.wave-btn[data-wave="sine"]').classList.add('active');
 speedSlider.value = 10;
+speedDisplaySpan.textContent = 'x1.0';
 requestAnimationFrame(gameLoop);
