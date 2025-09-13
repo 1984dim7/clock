@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6469478872018956"
      crossorigin="anonymous"></script>
     
@@ -15,8 +14,14 @@
 </head>
 <body>
     <div class="glass-panel">
+        <a href="http://dim7.jp" class="back-button">‹ Top</a>
+
         <h1 class="main-title">The Harmony Clock</h1>
-        <canvas id="clockCanvas" width="400" height="400"></canvas>
+        
+        <div class="clock-container">
+            <canvas id="clockCanvas" width="400" height="400"></canvas>
+            <div id="chordDisplay" class="chord-display">...</div>
+        </div>
         
         <div class="controls-container">
             <div id="digitalClock" class="display-panel">00:00:00</div>
@@ -53,7 +58,8 @@
                 <button id="soundToggleButton" class="sound-button-text">Unmute</button>
                 <div class="slider-container">
                     <label for="speedSlider">Speed</label>
-                    <input type="range" id="speedSlider" min="0" max="100" value="10" step="1">
+                    <input type="range" id="speedSlider" min="-100" max="100" value="10" step="1">
+                    <span id="speedDisplay" class="speed-display">x1.0</span>
                 </div>
                 <button id="syncButton">Sync</button>
             </div>
