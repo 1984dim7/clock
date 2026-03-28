@@ -411,22 +411,66 @@ canvas#oscilloscopeCanvas {
 
 @media (max-width: 420px) {
     .main-title {
-        font-size: 1.8em;
+        font-size: 1.6em;
     }
 
-    .interactive-controls,
-    .volume-controls {
+    .clock-container {
+        max-width: 250px;
+    }
+
+    .freq-panel {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 8px;
+    }
+
+    .freq-panel > div {
+        gap: 3px;
+    }
+
+    .freq-panel .freq-value {
+        min-width: auto;
+        font-size: 0.9em;
+    }
+
+    .interactive-controls {
         flex-direction: column;
+        gap: 12px;
     }
 
-    .waveform-controls,
+    .waveform-controls {
+        width: 100%;
+        flex-basis: auto;
+    }
+
+    .wave-btn {
+        font-size: 0.75em;
+        padding: 4px;
+    }
+
     .octave-controls {
         width: 100%;
-        flex-basis: 100%;
+        flex-basis: auto;
+        justify-content: space-between;
+    }
+    
+    input[type="number"] {
+        width: 30px;
+    }
+
+    .volume-controls {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0 5px;
     }
 
     .slider-group {
-        width: 100%;
-        justify-content: space-between;
+        width: auto;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    input[type="range"] {
+        width: 70px;
     }
 }

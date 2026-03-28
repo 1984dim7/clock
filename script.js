@@ -40,42 +40,57 @@ let timeMultiplier = 1;
 const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const baseFreq = 440; // A4
 
-// FIX: Chord data keys are now properly sorted alphabetically
-const chordData = {
-    'C,E,G': 'C Major', 'C,D#,G': 'C Minor',
-    'C#,F,G#': 'C# Major', 'C#,E,G#': 'C# Minor',
-    'D,F#,A': 'D Major', 'D,F,A': 'D Minor',
-    'D#,G,A#': 'D# Major', 'D#,F#,A#': 'D# Minor',
-    'E,G#,B': 'E Major', 'E,G,B': 'E Minor',
-    'C,F,A': 'F Major', 'C,F,G#': 'F Minor',
-    'C#,F#,A#': 'F# Major', 'A,C#,F#': 'F# Minor',
-    'B,D,G': 'G Major', 'A#,D,G': 'G Minor',
-    'C,D#,G#': 'G# Major', 'B,D#,G#': 'G# Minor',
-    'A,C#,E': 'A Major', 'A,C,E': 'A Minor',
-    'A#,D,F': 'A# Major', 'A#,C#,F': 'A# Minor',
-    'B,D#,F#': 'B Major', 'B,D,F#': 'B Minor',
-};
-function getNoteFromFreq(freq) {
-    if (freq === 0) return null;
-    const midiNote = 69 + 12 * Math.log2(freq / 440);
-    return notes[Math.round(midiNote) % 12];
+const TRIADS = [];
+for (let i = 0; i < 12; i++) {
+    TRIADS.push({ name: notes[i] + ' Major', pitches: [i, (i + 4) % 12, (i + 7) % 12] });
+    TRIADS.push({ name: notes[i] + ' Minor', pitches: [i, (i + 3) % 12, (i + 7) % 12] });
 }
+
+function getPitchClass(freq) {
+    if (freq === 0) return null;
+    let midiNote = 69 + 12 * Math.log2(freq / 440);
+    let pc = midiNote % 12;
+    if (pc < 0) pc += 12;
+    return pc;
+}
+
 function getChord() {
-    const currentNotes = [
-        getNoteFromFreq(displayedFrequencies.hour),
-        getNoteFromFreq(displayedFrequencies.minute),
-        getNoteFromFreq(displayedFrequencies.second)
-    ].filter(Boolean);
+    let p1 = getPitchClass(displayedFrequencies.hour);
+    let p2 = getPitchClass(displayedFrequencies.minute);
+    let p3 = getPitchClass(displayedFrequencies.second);
 
-    if (currentNotes.length < 2) return "..."; // Allow chords with 2 unique notes
+    if (p1 === null || p2 === null || p3 === null) return "...";
+    let currentPitches = [p1, p2, p3];
 
-    // Sort alphabetically to create a consistent key
-    const uniqueSortedNotes = [...new Set(currentNotes)].sort().join(',');
+    let minDistance = Infinity;
+    let bestChord = "...";
 
-    // For debugging in browser console:
-    // console.log("Notes:", currentNotes, "Key:", uniqueSortedNotes);
+    function getDist(a, b) {
+        let d = Math.abs(a - b);
+        return Math.min(d, 12 - d);
+    }
 
-    return chordData[uniqueSortedNotes] || "...";
+    // 6 permutations for matching 3 current pitches to 3 triad pitches
+    let perms = [
+        [0, 1, 2], [0, 2, 1], [1, 0, 2],
+        [1, 2, 0], [2, 0, 1], [2, 1, 0]
+    ];
+
+    for (let chord of TRIADS) {
+        let t = chord.pitches;
+        let bestPermDist = Infinity;
+        for (let perm of perms) {
+            let dist = Math.pow(getDist(currentPitches[0], t[perm[0]]), 2) +
+                       Math.pow(getDist(currentPitches[1], t[perm[1]]), 2) +
+                       Math.pow(getDist(currentPitches[2], t[perm[2]]), 2);
+            if (dist < bestPermDist) bestPermDist = dist;
+        }
+        if (bestPermDist < minDistance) {
+            minDistance = bestPermDist;
+            bestChord = chord.name;
+        }
+    }
+    return bestChord;
 }
 
 
