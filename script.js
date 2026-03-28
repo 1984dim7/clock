@@ -40,10 +40,37 @@ let timeMultiplier = 1;
 const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const baseFreq = 440; // A4
 
-const TRIADS = [];
+const chordTemplates = [
+    { suffix: ' Major', intervals: [0, 4, 7], bias: 0 },
+    { suffix: ' Minor', intervals: [0, 3, 7], bias: 0 },
+    { suffix: ' dim', intervals: [0, 3, 6], bias: 0.1 },
+    { suffix: ' aug', intervals: [0, 4, 8], bias: 0.1 },
+    { suffix: ' sus4', intervals: [0, 5, 7], bias: 0.1 },
+    { suffix: ' sus2', intervals: [0, 2, 7], bias: 0.1 },
+    { suffix: ' M7', intervals: [0, 4, 11], bias: 0.2 },
+    { suffix: ' 7', intervals: [0, 4, 10], bias: 0.2 },
+    { suffix: ' m7', intervals: [0, 3, 10], bias: 0.2 },
+    { suffix: ' mM7', intervals: [0, 3, 11], bias: 0.2 },
+    { suffix: ' M7', intervals: [0, 7, 11], bias: 0.25 },
+    { suffix: ' 7', intervals: [0, 7, 10], bias: 0.25 },
+    { suffix: ' m7b5', intervals: [0, 6, 10], bias: 0.2 },
+    { suffix: ' dim7', intervals: [0, 6, 9], bias: 0.2 },
+    { suffix: ' 6', intervals: [0, 4, 9], bias: 0.3 },
+    { suffix: ' m6', intervals: [0, 3, 9], bias: 0.3 },
+    { suffix: ' add9', intervals: [0, 4, 2], bias: 0.3 },
+    { suffix: ' madd9', intervals: [0, 3, 2], bias: 0.3 },
+    { suffix: ' 7sus4', intervals: [0, 5, 10], bias: 0.3 }
+];
+
+const CHORDS = [];
 for (let i = 0; i < 12; i++) {
-    TRIADS.push({ name: notes[i] + ' Major', pitches: [i, (i + 4) % 12, (i + 7) % 12] });
-    TRIADS.push({ name: notes[i] + ' Minor', pitches: [i, (i + 3) % 12, (i + 7) % 12] });
+    for (let template of chordTemplates) {
+        CHORDS.push({
+            name: notes[i] + template.suffix,
+            pitches: template.intervals.map(inter => (i + inter) % 12),
+            bias: template.bias
+        });
+    }
 }
 
 function getPitchClass(freq) {
@@ -62,7 +89,7 @@ function getChord() {
     if (p1 === null || p2 === null || p3 === null) return "...";
     let currentPitches = [p1, p2, p3];
 
-    let minDistance = Infinity;
+    let minScore = Infinity;
     let bestChord = "...";
 
     function getDist(a, b) {
@@ -70,23 +97,24 @@ function getChord() {
         return Math.min(d, 12 - d);
     }
 
-    // 6 permutations for matching 3 current pitches to 3 triad pitches
+    // 6 permutations for matching 3 current pitches to 3 triad/chord pitches
     let perms = [
         [0, 1, 2], [0, 2, 1], [1, 0, 2],
         [1, 2, 0], [2, 0, 1], [2, 1, 0]
     ];
 
-    for (let chord of TRIADS) {
+    for (let chord of CHORDS) {
         let t = chord.pitches;
         let bestPermDist = Infinity;
         for (let perm of perms) {
             let dist = Math.pow(getDist(currentPitches[0], t[perm[0]]), 2) +
-                       Math.pow(getDist(currentPitches[1], t[perm[1]]), 2) +
-                       Math.pow(getDist(currentPitches[2], t[perm[2]]), 2);
+                Math.pow(getDist(currentPitches[1], t[perm[1]]), 2) +
+                Math.pow(getDist(currentPitches[2], t[perm[2]]), 2);
             if (dist < bestPermDist) bestPermDist = dist;
         }
-        if (bestPermDist < minDistance) {
-            minDistance = bestPermDist;
+        let score = bestPermDist + chord.bias;
+        if (score < minScore) {
+            minScore = score;
             bestChord = chord.name;
         }
     }
