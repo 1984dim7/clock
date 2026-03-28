@@ -66,15 +66,15 @@ function getChord() {
         getNoteFromFreq(displayedFrequencies.minute),
         getNoteFromFreq(displayedFrequencies.second)
     ].filter(Boolean);
-    
+
     if (currentNotes.length < 2) return "..."; // Allow chords with 2 unique notes
-    
+
     // Sort alphabetically to create a consistent key
     const uniqueSortedNotes = [...new Set(currentNotes)].sort().join(',');
 
     // For debugging in browser console:
     // console.log("Notes:", currentNotes, "Key:", uniqueSortedNotes);
-    
+
     return chordData[uniqueSortedNotes] || "...";
 }
 
@@ -135,11 +135,11 @@ function updateSound() {
     const m = virtualTime.getMinutes();
     const s = virtualTime.getSeconds();
     const ms = virtualTime.getMilliseconds();
-    
+
     const hourValue = (h % 12 + m / 60 + s / 3600 + ms / 3600000);
     const hourNoteValue = (hourValue / 12) * 12;
     const hourFreq = hourBaseFreq * Math.pow(2, hourNoteValue / 12);
-    
+
     const minuteValue = (m + s / 60 + ms / 60000);
     const minuteNoteValue = (minuteValue / 60) * 12;
     const minuteFreq = minuteBaseFreq * Math.pow(2, minuteNoteValue / 12);
@@ -158,7 +158,7 @@ function updateSound() {
         oscillators.second.gainNode.gain.linearRampToValueAtTime(parseFloat(secondVolumeSlider.value), rampTime);
     }
     displayedFrequencies = { hour: hourFreq, minute: minuteFreq, second: secondFreq };
-    
+
     if (chordDisplayDiv) {
         chordDisplayDiv.textContent = getChord();
     }
@@ -169,24 +169,41 @@ function drawClock() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(radius, radius);
-    const grad = ctx.createRadialGradient(0, 0, radius * 0.8, 0, 0, radius);
-    grad.addColorStop(0, '#e1f5fe');
-    grad.addColorStop(1, '#b3e5fc');
+    const grad = ctx.createRadialGradient(0, -radius * 0.2, 0, 0, 0, radius);
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(0.3, '#d4f0ff');
+    grad.addColorStop(1, '#81c0eb');
     ctx.beginPath();
     ctx.arc(0, 0, radius * 0.98, 0, 2 * Math.PI);
     ctx.fillStyle = grad;
-    ctx.shadowColor = 'rgba(0,0,0,0.2)';
-    ctx.shadowBlur = 15;
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 20;
     ctx.shadowOffsetX = 5;
-    ctx.shadowOffsetY = 5;
+    ctx.shadowOffsetY = 10;
     ctx.fill();
-    const borderGrad = ctx.createLinearGradient(-radius, -radius, radius, radius);
-    borderGrad.addColorStop(0, '#ffffff');
-    borderGrad.addColorStop(1, '#e0e0e0');
+
+    // Top crescent glass highlight reflection
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 0.95, 0, 2 * Math.PI);
+    ctx.clip();
+    ctx.beginPath();
+    ctx.ellipse(0, -radius * 0.5, radius * 0.8, radius * 0.6, 0, 0, 2 * Math.PI);
+    const highlightGrad = ctx.createLinearGradient(0, -radius, 0, 0);
+    highlightGrad.addColorStop(0, 'rgba(255,255,255,0.9)');
+    highlightGrad.addColorStop(1, 'rgba(255,255,255,0.0)');
+    ctx.fillStyle = highlightGrad;
+    ctx.fill();
+    ctx.restore();
+
+    // Subtle Inner Border
+    const borderGrad = ctx.createLinearGradient(0, -radius, 0, radius);
+    borderGrad.addColorStop(0, 'rgba(255,255,255,1)');
+    borderGrad.addColorStop(1, 'rgba(255,255,255,0.2)');
     ctx.beginPath();
     ctx.arc(0, 0, radius * 0.98, 0, 2 * Math.PI);
     ctx.strokeStyle = borderGrad;
-    ctx.lineWidth = radius * 0.04;
+    ctx.lineWidth = radius * 0.05;
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
@@ -198,7 +215,7 @@ function drawClock() {
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
     ctx.fillStyle = '#003366';
-    for(let i = 0; i < 12; i++){
+    for (let i = 0; i < 12; i++) {
         let angle = i * Math.PI / 6;
         let x = radius * 0.8 * Math.sin(angle);
         let y = -radius * 0.8 * Math.cos(angle);
@@ -212,8 +229,8 @@ function drawClock() {
     const minuteAngle = ((m + s / 60 + ms / 60000) / 60) * 2 * Math.PI;
     const secondAngle = ((s + ms / 1000) / 60) * 2 * Math.PI;
     drawHand(hourAngle, radius * 0.5, radius * 0.07, '#757575');
-    drawHand(minuteAngle, radius * 0.75, radius * 0.05, '#4285F4');
-    drawHand(secondAngle, radius * 0.85, radius * 0.02, '#E63946');
+    drawHand(minuteAngle, radius * 0.75, radius * 0.05, '#0055ff'); // Aero Blue
+    drawHand(secondAngle, radius * 0.85, radius * 0.02, '#00e676'); // Neon Green
     ctx.beginPath();
     ctx.arc(0, 0, radius * 0.05, 0, 2 * Math.PI);
     ctx.fillStyle = '#555';
@@ -225,18 +242,30 @@ function drawClock() {
 
 function drawHand(angle, length, width, color) {
     ctx.save();
-    ctx.rotate(angle - Math.PI/2);
+    ctx.rotate(angle - Math.PI / 2);
     ctx.beginPath();
     ctx.moveTo(-length * 0.1, 0);
     ctx.lineTo(length, 0);
     ctx.lineWidth = width;
     ctx.strokeStyle = color;
     ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 5;
-    ctx.shadowOffsetX = 2;
+
+    // Outer glow for aero style
+    ctx.shadowColor = color === '#757575' ? 'rgba(0,0,0,0.5)' : color;
+    ctx.shadowBlur = color === '#757575' ? 5 : 10;
+    ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 2;
     ctx.stroke();
+
+    // Inner bright spine for glass reflections
+    ctx.beginPath();
+    ctx.moveTo(-length * 0.1, 0);
+    ctx.lineTo(length * 0.95, 0);
+    ctx.lineWidth = width * 0.35;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+
     ctx.restore();
 }
 
@@ -255,16 +284,14 @@ function updateFrequencyDisplay() {
 function drawOscilloscope() {
     if (!analyser || !isSoundOn || (audioContext && audioContext.state === 'suspended')) {
         oscCtx.clearRect(0, 0, oscilloscopeCanvas.width, oscilloscopeCanvas.height);
-        oscCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-        oscCtx.fillRect(0, 0, oscilloscopeCanvas.width, oscilloscopeCanvas.height);
         return;
     }
     analyser.getByteTimeDomainData(analyser.dataArray);
     oscCtx.clearRect(0, 0, oscilloscopeCanvas.width, oscilloscopeCanvas.height);
-    oscCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-    oscCtx.fillRect(0, 0, oscilloscopeCanvas.width, oscilloscopeCanvas.height);
-    oscCtx.lineWidth = 2;
-    oscCtx.strokeStyle = 'lime';
+    oscCtx.lineWidth = 3;
+    oscCtx.strokeStyle = '#00ffff';
+    oscCtx.shadowColor = '#00ffff';
+    oscCtx.shadowBlur = 10;
     oscCtx.beginPath();
     const sliceWidth = oscilloscopeCanvas.width * 1.0 / analyser.dataArray.length;
     let x = 0;
@@ -305,7 +332,7 @@ soundToggleButton.addEventListener('click', async () => {
 // FIX: New, more robust speed/rewind logic
 speedSlider.addEventListener('input', (e) => {
     const sliderValue = parseFloat(e.target.value);
-    
+
     // This function maps the slider's -100 to 100 range to a non-linear speed
     function calculateSpeed(value) {
         if (value === 0) return 0;
@@ -318,7 +345,7 @@ speedSlider.addEventListener('input', (e) => {
             return direction * magnitude;
         }
     }
-    
+
     timeMultiplier = calculateSpeed(sliderValue);
     speedDisplaySpan.textContent = `x${timeMultiplier.toFixed(1)}`;
 });
